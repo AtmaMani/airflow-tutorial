@@ -1,4 +1,3 @@
-# ------------------------------------------------------------------
 # This script is used to stream Twitter data into a MySQL my_database
 # note that for this you need an approved Twitter develope account
 # an app and the keys for said app
@@ -255,4 +254,4 @@ if __name__ == "__main__":
     myStream = tweepy.Stream(auth=twitter.auth, listener=myStreamListener, timeout=30)
 
     # stream tweets using the filter method
-    start_stream(myStream, track=["python", "pycon", "jupyter", "#pycon2019"], async=True)
+    start_stream(myStream, track=["python", "pycon", "jupyter", "#pycon2019"])

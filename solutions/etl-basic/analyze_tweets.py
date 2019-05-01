@@ -1,3 +1,4 @@
+
 import os
 import os.path
 import re
@@ -10,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 # import the previously created functions
-from stream_twitter import connect_db
+from stream_twitter_alt import connect_db
 
 # Details for our MySql connection
 DATABASE = {

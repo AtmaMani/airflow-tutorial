@@ -1,21 +1,14 @@
-# ------------------------------------------------------------------
-# This script is used to stream Twitter data into a MySQL my_database
-# note that for this you need an approved Twitter develope account
-# an app and the keys for said app
-# ------------------------------------------------------------------
-
+from mysql import connector as mysql
 # Import libraries needed
 import json
 import time
+
 from configparser import ConfigParser
 from pathlib import Path
 
 import tweepy
 from dateutil import parser
 from mysql import connector as mysql
-
-# Path to the config file with the keys make sure not to commit this file
-CONFIG_FILE = Path.cwd() / "config.cfg"
 
 # Details for our MySql connection
 DATABASE = {
@@ -50,7 +43,6 @@ def connect_db(my_database):
         return dbconnect
     except mysql.Error as e:
         print(e)
-
 
 def create_table(my_database, new_table):
     """Create new table in a my_database
@@ -88,10 +80,31 @@ def create_table(my_database, new_table):
     return print(f"Created {new_table} table")
 
 
+# Path to the config file with the keys make sure not to commit this file
+CONFIG_FILE = Path.cwd() / "config.cfg"
+
+def connectTwitter():
+    config = ConfigParser()
+    config.read(CONFIG_FILE)
+
+    #  complete the part to Authenticate to Twitter
+    # Authenticate to Twitter
+    auth = tweepy.OAuthHandler(
+        config.get("twitter", "consumer_key"), config.get("twitter", "consumer_secret")
+    )
+    auth.set_access_token(
+        config.get("twitter", "access_token"), config.get("twitter", "access_token_secret")
+    )
+
+    # Create Twitter API object
+    twitter = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+
+    print(f"🦄 Connected as {twitter.me().screen_name}")
+    return twitter
+
 def populate_table(
-    user, created_at, tweet, retweet_count, id_str, my_database=DATABASE
-):
-    """Populate a given table witht he Twitter collected data
+    user, created_at, tweet, retweet_count, id_str, my_database=DATABASE):
+    """Populate a given table with he Twitter collected data
     
     Args:
         user (str): username from the status
@@ -106,10 +119,13 @@ def populate_table(
     cursor = dbconnect.cursor()
     cursor.execute("USE airflowdb")
 
-    query = "INSERT INTO tweets (user, created_at, tweet, retweet_count, id_str) VALUES (%s, %s, %s, %s, %s)"
+    # add content here
 
     try:
+        query="INSERT INTO tweets (user, created_at, tweet, retweet_count, id_str) VALUES (%s, %s, %s, %s, %s)"
+        
         cursor.execute(query, (user, created_at, tweet, retweet_count, id_str))
+        
         dbconnect.commit()
         print("commited")
 
@@ -122,34 +138,8 @@ def populate_table(
 
     return
 
-
-# ----------------------------------------------
-#  Access the Twitter API
-# ----------------------------------------------
-
-
-def connectTwitter():
-    config = ConfigParser()
-    config.read(CONFIG_FILE)
-
-    # Authenticate to Twitter
-    auth = tweepy.OAuthHandler(
-        config.get("twitter", "consumer_key"), config.get("twitter", "consumer_secret")
-    )
-    auth.set_access_token(
-        config.get("twitter", "access_token"),
-        config.get("twitter", "access_token_secret"),
-    )
-
-    # Create Twitter API object
-    twitter = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
-
-    print(f"🦄 Connected as {twitter.me().screen_name}")
-
-    return twitter
-
-
 class customListener(tweepy.StreamListener):
+
     """We need to create an instance of the Stream Listener
     http://docs.tweepy.org/en/v3.4.0/streaming_how_to.html      
     """
@@ -166,7 +156,7 @@ class customListener(tweepy.StreamListener):
     def on_data(self, data):
         """
         Automatic detection of the kind of data collected from Twitter
-        This method reads in tweet data as Json and extracts the data we want.
+        This method reads in tweet data as JSON and extracts the data we want.
         """
         try:
             # parse as json
@@ -187,7 +177,6 @@ class customListener(tweepy.StreamListener):
         except Error as e:
             print(e)
 
-
 def start_stream(stream, **kwargs):
     """Start the stream, prints the disconnection error
     
@@ -199,9 +188,9 @@ def start_stream(stream, **kwargs):
         stream.filter(**kwargs)
     except Exception:
         stream.disconnect()
-        print("Fatal exception")
+    print("Fatal exception")
 
-
+# complete the main function
 if __name__ == "__main__":
     
     create_table(DATABASE, "tweets")
@@ -213,6 +202,4 @@ if __name__ == "__main__":
     myStream = tweepy.Stream(auth=twitter.auth, listener=myStreamListener, timeout=30)
 
     # stream tweets using the filter method
-    start_stream(myStream, track=["python", "pycon", "jupyter", "#pycon2019"], async=True)
-
-
+    start_stream(myStream, track=["python", "pycon", "jupyter", "#pycon2019"])
