@@ -18,3 +18,16 @@ The `airflow` user is a global user that can work on both the databases.
  - install airflow `pip install apache-airflow`
  - initialize airflow db `airflow initdb`. This db contains the tasks, statuses of tasks etc.
 
+## Workshop outline
+1. starts off with importance of automation. Aspects of good automation, pipeline basics
+2. MySQL DB creation. Talking to DB with Python
+3. Twitter API via Tweepy library
+4. Read tweets from home
+5. Store tweets into a database - ETL workflow
+6. Analyze tweets using matplotlib
+7. Viz individual components as DAG
+8. Install airflow
+9. Configure airflow to work on mysqldb
+10. viz DAG in airflow.
+
+Airflow is like Jenkins -> a portal to view all ETL tasks and view individual tasks.
